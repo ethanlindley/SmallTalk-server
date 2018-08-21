@@ -10,8 +10,7 @@ class Server(object):
         self.port = port
         self.backlog = backlog
 
-        self.channels = channels  # each server can have multiple channels
-        self.peers = []  # active channel connections to server
+        self.channels = channels  # store connected channels to the server
         self.nicknames = []  # registered nicknames across all channels on the server
 
     def start_server(self):
@@ -20,21 +19,19 @@ class Server(object):
         
         self.notify.info('starting server at {0}:{1}'.format(*server_addr))
         s.bind(server_addr)
-        s.listen(self.backlog)  # should never exceed 10000 connection attempts on the socket listener
+        s.listen(self.backlog)
 
         while True:
             conn, client_addr = s.accept()
             try:
-                self.notify.warning('new incoming connection from {0}:{1}'.format(*client_addr))
-                self.peers.append(conn)
+                self.notify.debug('incoming connection from {0}:{1}'.format(*client_addr))
+                # TODO - determine whether new suggestion is a channel or a client
                 while True:
                     data = conn.recv(1024)
-                    self.notify.debug('new data received - {!r}'.format(data))
+                    self.notify.debug('incoming data received from {0}:{1} - {!r}'.format(client_addr[0], client_addr[1], data))
                     if data:
-                        for client in self.peers:
-                            if client == conn:
-                                continue
-                            # TODO - handle packet data
+                        # TODO - handle packet data
+                        pass
                     else:
                         self.notify.warning('invalid data received from {0}:{1} - {!r}'.format(client_addr[0], client_addr[1], data))
                         break
